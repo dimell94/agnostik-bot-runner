@@ -1,0 +1,8 @@
+app:
+  base-url: http://localhost:8080
+  ws-endpoint: ws://localhost:8080/ws
+  bots:
+    - username: bot1
+      password: secret1
+    - username: bot2
+      password: secret2
