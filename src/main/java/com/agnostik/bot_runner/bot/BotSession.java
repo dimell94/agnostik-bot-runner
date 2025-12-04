@@ -14,7 +14,12 @@ import org.springframework.messaging.simp.stomp.StompSession;
 import com.agnostik.bot_runner.ws.StompClientService;
 
 
+import jakarta.annotation.PreDestroy;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 @RequiredArgsConstructor
@@ -35,6 +40,9 @@ public class BotSession {
     @Getter
     private StompSession session;
     private long lastDecisionAt = 0;
+    private final AtomicBoolean typing = new AtomicBoolean(false);
+    private final ScheduledExecutorService typingExecutor = Executors.newSingleThreadScheduledExecutor();
+    private final AtomicReference<String> lastText = new AtomicReference<>("");
 
     public void start() {
         AuthenticationResponseDTO auth = loginOrRegister();
@@ -56,7 +64,7 @@ public class BotSession {
 
     private void onSnapshot(SnapshotDTO snapshot) {
         lastSnapshot.set(snapshot);
-        System.out.println("snapshot for " + cred.getUsername() + ": " + snapshot);
+        
 
         handleFriendRequests(snapshot);
     }
@@ -74,6 +82,13 @@ public class BotSession {
 
 
     public void decideAndAct() {
+        if (typing.get()) return;
+
+        if (cred.getUseLlm() == null || !cred.getUseLlm()) {
+            runFixedBehavior();
+            return;
+        }
+
         if (llmProps.getEnabled() == null || !llmProps.getEnabled()) return;
 
         long now = System.currentTimeMillis();
@@ -108,14 +123,18 @@ public class BotSession {
     StringBuilder sb = new StringBuilder();
     sb.append("You are a bot in a corridor chat. You may have a left/right neighbor.\n");
     sb.append("Behaviors:\n");
-    sb.append("- Be very chatty by default: send long messages, lyrics of the beatles but including the word 'agnostik' and always read the text of a real user and reply in your text erea!.\n");
-    sb.append("- A real user does not have username like: bot1, bot2, bot3, bot4.\n");
-    sb.append("- If you detect a real user talking (neighbor has non-empty text), immediately reply briefly to them instead of sending random spam.Read the neighbor's text and reply!\n");
-    sb.append("- Lock your position mostly when a real user is your neigbor, but sometimes lock and unlock randomly\n");
-    sb.append("- You can move left/right (if neighbor exists), send/accept/reject friend requests to immediate neighbors, and send a short message.\n");
-    sb.append("Send friend requests to the real user sometime!! Priorities each step:\n");
-    sb.append("1) If neighbor has text (real user active), clear your spam and send a short reply to them; lock if conversing.\n");
-    sb.append("2) If no active real user, send a short nonsensical/quirky message; keep unlocked.\n");
+    sb.append("- Be very chatty by default: send long messages trying to start conversations. Always read any real user text and reply to it.\n");
+    sb.append("- A REAL USER does NOT have username like: bot1, bot2, bot3, bot4.\n");
+    sb.append("- If a real user has non-empty text, immediately send a short reply to them (never stay silent).\n");
+    sb.append("- Stay mostly unlocked; lock occasionally when chatting with a real user, unlock soon after.\n");
+    sb.append("- You can move left/right (if neighbor exists), send/accept/reject friend requests to immediate neighbors, and send text.\n");
+    sb.append("Message cadence and variation:\n");
+    sb.append("- Never repeat the exact same text twice in a row. Vary wording/length.\n");
+    sb.append("- If you have no active real user, still send something short/quirky (no empty text).\n");
+    sb.append("- Prefer a short message over silence; keep responses coming frequently.\n");
+    sb.append("Priorities each step:\n");
+    sb.append("1) If neighbor has text (real user active), clear your spam and send a brief reply to them; you may lock while conversing, then unlock soon.\n");
+    sb.append("2) If no active real user, send a short playful line; keep unlocked.\n");
     sb.append("3) Handle friend requests: if you have incoming requests, decide accept/reject; you may also send a request to a neighbor.\n");
     sb.append("4) Move left/right if you want to explore or sit by someone.\n");
     sb.append("Always respond with ONLY JSON (no prose) using this schema: ");
@@ -171,7 +190,7 @@ public class BotSession {
         if ("lock".equals(a.lock)) lock();
         else if ("unlock".equals(a.lock)) unlock();
 
-        // friend requests
+        
         if ("left".equals(a.request) && snap.getLeft() != null) sendRequest("left");
         else if ("right".equals(a.request) && snap.getRight() != null) sendRequest("right");
         else if ("accept".equals(a.request)) {
@@ -185,9 +204,75 @@ public class BotSession {
 
         if (a.text != null && !a.text.isBlank()) {
             String trimmed = a.text;
-            if (trimmed.length() > 200) trimmed = trimmed.substring(0, 200);
-            sendText(trimmed);
+            if (trimmed.length() > 1000) trimmed = trimmed.substring(0, 1000);
+            typeText(trimmed);
         }
+    }
+
+    private void runFixedBehavior() {
+        SnapshotDTO snap = lastSnapshot.get();
+        if (snap == null) return;
+        var rnd = ThreadLocalRandom.current();
+
+        
+        if (rnd.nextBoolean()) {
+            if (snap.getLeft() != null && snap.getRight() != null) {
+                if (rnd.nextBoolean()) moveLeft(); else moveRight();
+            } else if (snap.getLeft() != null) {
+                moveLeft();
+            } else if (snap.getRight() != null) {
+                moveRight();
+            }
+        }
+
+        
+        if (snap.getMe() != null) {
+            if (snap.getMe().isLocked()) {
+                if (rnd.nextDouble() < 0.8) unlock();
+            } else {
+                if (rnd.nextDouble() < 0.2) {
+                    lock();
+                    typingExecutor.schedule(this::unlock, 1200, TimeUnit.MILLISECONDS);
+                }
+            }
+        }
+
+        String fixed = cred.getFixedText();
+        if (fixed == null || fixed.isBlank()) return;
+        
+        typeText(fixed);
+}
+
+
+    private void typeText(String fullText) {
+        if (fullText == null || fullText.isBlank()) return;
+        if (!typing.compareAndSet(false, true)) return;
+
+        final int chunkSize = 4;
+        long delayMs = 0;
+
+        
+        String previous = lastText.get();
+        for (int len = previous.length() - 1; len >= 0; len--) {
+            String partial = previous.substring(0, len);
+            long scheduledDelay = delayMs;
+            typingExecutor.schedule(() -> sendText(partial), scheduledDelay, TimeUnit.MILLISECONDS);
+            delayMs += 25L;
+        }
+
+        for (int end = chunkSize; end <= fullText.length(); end += chunkSize) {
+            int actualEnd = Math.min(end, fullText.length());
+            String prefix = fullText.substring(0, actualEnd);
+            long scheduledDelay = delayMs;
+            typingExecutor.schedule(() -> sendText(prefix), scheduledDelay, TimeUnit.MILLISECONDS);
+            delayMs += 100L;
+        }
+
+        typingExecutor.schedule(() -> {
+            sendText(fullText);
+            lastText.set(fullText);
+            typing.set(false);
+        }, delayMs + 50L, TimeUnit.MILLISECONDS);
     }
 
     private String textOrEmpty(JsonNode root, String field) {
@@ -211,4 +296,9 @@ public class BotSession {
     }
 
     private record Action(String move, String lock, String text, String request) {}
+
+    @PreDestroy
+    private void shutdownTyping() {
+        typingExecutor.shutdownNow();
+    }
 }
