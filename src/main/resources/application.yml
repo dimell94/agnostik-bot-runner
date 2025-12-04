@@ -1,6 +1,6 @@
 llm:
   url:  https://api.groq.com/openai/v1/chat/completions
-  api-key: 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
+  api-key: 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
   model: llama-3.1-8b-instant
   max-tokens: 128
   temperature: 0.7
@@ -20,12 +20,55 @@ app:
   bots:
     - username: bot1
       password: 123456789
+      use-llm: true
+      fixed-text:
     - username: bot2
       password: 123456789
+      use-llm: true
+      fixed-text:
     - username: bot3
       password: 123456789
+      use-llm: false
+      fixed-text: "Let me take you down
+        'Cause I'm going to strawberry fields
+        Nothing is real
+        And nothing to get hung about
+        Strawberry fields forever
+        Living is easy with eyes closed
+        Misunderstanding all you see
+        It's getting hard to be someone, but it all works out
+        It doesn't matter much to me
+        Let me take you down
+        'Cause I'm going to strawberry fields
+        Nothing is real
+        And nothing to get hung about
+        Strawberry fields forever
+        No one I think is in my tree
+        I mean, it must be high or low
+        That is, you can't, you know, tune in, but it's alright
+        That is, I think it's not too bad
+        Let me take you down
+        'Cause I'm going to strawberry fields
+        Nothing is real
+        And nothing to get hung about
+        Strawberry fields forever
+        Always, no sometimes, think it's me
+        But you know, I know when it's a dream
+        I think I know, I mean a yes
+        But it's all wrong
+        That is, I think I disagree
+        Let me take you down
+        'Cause I'm going to strawberry fields
+        Nothing is real
+        And nothing to get hung about
+        Strawberry fields forever
+        Strawberry fields forever
+        Strawberry fields forever"
     - username: bot4
       password: 123456789
+      use-llm: false
+      fixed-text: "agnostik??!!   AGNOSTIK////        agnostik:::     agnosTiK___    agnostik,,,,      AGNOSTIK::::::: agnostik▒▒▒▒▒▒▒▒▒▒        agnostik????   agnosTiK!!!!!::     agnostik;;;;;;;     AGNOSTIK…  agnostik    AGNOSTIK+++    agnostik+++        agnostik???   agnostik///      AGNOSTIK▒▒▒▒▒▒▒▒▒▒   agnostik:::::::   agnostik–––    agnostik:::::::         AGNOSTIK??!!??!!     agnostik,,,,,,,,      agnosTik::::::::::: agnostik▒▒▒▒▒▒▒▒▒▒   AGNOSTIK??!!??!!       agnostik@@@      agnostik###      agnostik%%%     agnostik!!!   AGNOSTIK::::::::::::     agnostik_____      agnostik______    agnostik::::     AGNOSTIK??   agnostik     agnostik▒▒▒▒▒▒▒▒▒▒▒▒    agnostik:::     agnostik:::     agnostik+++    AGNOSTIK;;;        agnostik::::::  agnostik////         agnostik////   agnostik////     AGNOSTIK!!!!     agnostik????   agnostik;;   AGNOSTIK▒▒▒▒▒▒▒▒▒▒▒▒      agnostik:::::::      agnostik:::     agnosTiK;;;      agnostik!!!    agnostik______     agnostik______   AGNOSTIK______        agnostik;;;;;;;      agnostik???   AGNOSTIK   agnostik:::::::::::::     agnostik:::::::::::::        AGNOSTIK::::::::::::      agnostik:::::::::::
+"
     
     
     
