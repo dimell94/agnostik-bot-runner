@@ -8,8 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import java.util.List;
 
 @Data
-@Configuration
-@EnableConfigurationProperties(AppProperties.class)
 @ConfigurationProperties(prefix = "app")
 public class AppProperties {
 
@@ -23,5 +21,7 @@ public class AppProperties {
 
         private String username;
         private String password;
+        private Boolean useLlm = true;
+        private String fixedText;
     }
 }
