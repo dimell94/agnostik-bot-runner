@@ -1,6 +1,6 @@
 llm:
   url:  https://api.groq.com/openai/v1/chat/completions
-  api-key: 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
+  api-key: key
   model: llama-3.1-8b-instant
   max-tokens: 128
   temperature: 0.7
