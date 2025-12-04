@@ -233,6 +233,7 @@ public class BotSession {
     }
 
     private boolean isDesignatedCycleBot() {
+
         if (Boolean.TRUE.equals(cred.getUseLlm())) return false;
         String username = cred.getUsername();
         return username != null && username.equalsIgnoreCase("bot3");
