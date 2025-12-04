@@ -26,6 +26,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class BotSession {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final long LOCK_PHASE_MS = TimeUnit.SECONDS.toMillis(15);
+    private static final long UNLOCK_PHASE_MS = TimeUnit.SECONDS.toMillis(30);
 
     private final AppProperties.BotCredential cred;
     private final HttpClientService http;
@@ -43,6 +45,11 @@ public class BotSession {
     private final AtomicBoolean typing = new AtomicBoolean(false);
     private final ScheduledExecutorService typingExecutor = Executors.newSingleThreadScheduledExecutor();
     private final AtomicReference<String> lastText = new AtomicReference<>("");
+    private boolean cycleBotInitialized = false;
+    private boolean cycleBot = false;
+    private boolean lockedPhase = true;
+    private long phaseEndsAtMs = 0L;
+    private long nextMoveAtMs = 0L;
 
     public void start() {
         AuthenticationResponseDTO auth = loginOrRegister();
@@ -210,6 +217,74 @@ public class BotSession {
     }
 
     private void runFixedBehavior() {
+        if (!cycleBotInitialized) {
+            cycleBot = isDesignatedCycleBot();
+            lockedPhase = true;
+            phaseEndsAtMs = System.currentTimeMillis() + LOCK_PHASE_MS;
+            cycleBotInitialized = true;
+        }
+        if (cycleBot) {
+            runLockUnlockCycle();
+            runFixedTextOnly();
+            return;
+        }
+
+        runLegacyFixedBehavior();
+    }
+
+    private boolean isDesignatedCycleBot() {
+        if (Boolean.TRUE.equals(cred.getUseLlm())) return false;
+        String username = cred.getUsername();
+        return username != null && username.equalsIgnoreCase("bot3");
+    }
+
+    private void runLockUnlockCycle() {
+        long now = System.currentTimeMillis();
+        SnapshotDTO snap = lastSnapshot.get();
+
+        if (lockedPhase) {
+            if (snap != null && snap.getMe() != null && !snap.getMe().isLocked()) {
+                lock();
+            }
+            if (now >= phaseEndsAtMs) {
+                lockedPhase = false;
+                phaseEndsAtMs = now + UNLOCK_PHASE_MS;
+                unlock();
+                nextMoveAtMs = now;
+            }
+            return;
+        }
+
+        if (snap != null && snap.getMe() != null && snap.getMe().isLocked()) {
+            unlock();
+        }
+
+        if (snap != null && (snap.getLeft() != null || snap.getRight() != null) && now >= nextMoveAtMs) {
+            boolean canMoveLeft = snap.getLeft() != null;
+            boolean canMoveRight = snap.getRight() != null;
+            if (canMoveLeft || canMoveRight) {
+                boolean moveRight = ThreadLocalRandom.current().nextBoolean();
+                if (moveRight && canMoveRight) {
+                    moveRight();
+                } else if (!moveRight && canMoveLeft) {
+                    moveLeft();
+                } else if (canMoveRight) {
+                    moveRight();
+                } else if (canMoveLeft) {
+                    moveLeft();
+                }
+            }
+            nextMoveAtMs = now + 1500L + ThreadLocalRandom.current().nextLong(1500L);
+        }
+
+        if (now >= phaseEndsAtMs) {
+            lockedPhase = true;
+            phaseEndsAtMs = now + LOCK_PHASE_MS;
+            lock();
+        }
+    }
+
+    private void runLegacyFixedBehavior() {
         SnapshotDTO snap = lastSnapshot.get();
         if (snap == null) return;
         var rnd = ThreadLocalRandom.current();
@@ -228,9 +303,9 @@ public class BotSession {
         
         if (snap.getMe() != null) {
             if (snap.getMe().isLocked()) {
-                if (rnd.nextDouble() < 0.8) unlock();
+                if (rnd.nextDouble() < 0.6) unlock();
             } else {
-                if (rnd.nextDouble() < 0.2) {
+                if (rnd.nextDouble() < 0.4) {
                     lock();
                     typingExecutor.schedule(this::unlock, 1200, TimeUnit.MILLISECONDS);
                 }
@@ -242,6 +317,12 @@ public class BotSession {
         
         typeText(fixed);
 }
+
+    private void runFixedTextOnly() {
+        String fixed = cred.getFixedText();
+        if (fixed == null || fixed.isBlank()) return;
+        typeText(fixed);
+    }
 
 
     private void typeText(String fullText) {
