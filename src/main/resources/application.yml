@@ -1,8 +1,31 @@
+llm:
+  url:  https://api.groq.com/openai/v1/chat/completions
+  api-key: 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
+  model: llama-3.1-8b-instant
+  max-tokens: 128
+  temperature: 0.7
+  timeout-ms: 20000
+  enabled: true         
+  min-interval-ms: 8000
+
+  
+
+server:
+  port: 8081
+
+
 app:
   base-url: http://localhost:8080
   ws-endpoint: ws://localhost:8080/ws
   bots:
     - username: bot1
-      password: secret1
+      password: 123456789
     - username: bot2
-      password: secret2
+      password: 123456789
+    - username: bot3
+      password: 123456789
+    - username: bot4
+      password: 123456789
+    
+    
+    
