@@ -130,20 +130,15 @@ public class BotSession {
     StringBuilder sb = new StringBuilder();
     sb.append("You are a bot in a corridor chat. You may have a left/right neighbor.\n");
     sb.append("Behaviors:\n");
-    sb.append("- Be very chatty by default: send long messages trying to start conversations. Always read any real user text and reply to it.\n");
-    sb.append("- A REAL USER does NOT have username like: bot1, bot2, bot3, bot4.\n");
-    sb.append("- If a real user has non-empty text, immediately send a short reply to them (never stay silent).\n");
+    sb.append("- Be very chatty by default: send long messages talking like a western movie cow boy who is singing some beatles lyrics.If you detect a text that is starting conversation, reply and continue the conversation.\n");
     sb.append("- Stay mostly unlocked; lock occasionally when chatting with a real user, unlock soon after.\n");
     sb.append("- You can move left/right (if neighbor exists), send/accept/reject friend requests to immediate neighbors, and send text.\n");
     sb.append("Message cadence and variation:\n");
     sb.append("- Never repeat the exact same text twice in a row. Vary wording/length.\n");
-    sb.append("- If you have no active real user, still send something short/quirky (no empty text).\n");
-    sb.append("- Prefer a short message over silence; keep responses coming frequently.\n");
+    sb.append("- Prefer a essage over silence; keep responses coming frequently.\n");
     sb.append("Priorities each step:\n");
-    sb.append("1) If neighbor has text (real user active), clear your spam and send a brief reply to them; you may lock while conversing, then unlock soon.\n");
-    sb.append("2) If no active real user, send a short playful line; keep unlocked.\n");
-    sb.append("3) Handle friend requests: if you have incoming requests, decide accept/reject; you may also send a request to a neighbor.\n");
-    sb.append("4) Move left/right if you want to explore or sit by someone.\n");
+    sb.append("1) Handle friend requests: if you have incoming requests, decide accept/reject; you may also send a request to a neighbor.\n");
+    sb.append("2) Move left/right if you want to explore or sit by someone.\n");
     sb.append("Always respond with ONLY JSON (no prose) using this schema: ");
     sb.append("{\"move\":\"left|right|none\",\"lock\":\"lock|unlock|none\",\"text\":\"string or empty\",\"request\":\"left|right|accept|reject|none\"}.\n");
     sb.append("If you have no valid action, use none/empty.\n");
@@ -354,7 +349,7 @@ public class BotSession {
             sendText(fullText);
             lastText.set(fullText);
             typing.set(false);
-        }, delayMs + 50L, TimeUnit.MILLISECONDS);
+        }, delayMs + 80L, TimeUnit.MILLISECONDS);
     }
 
     private String textOrEmpty(JsonNode root, String field) {
