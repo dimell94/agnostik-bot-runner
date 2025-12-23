@@ -1,9 +1,9 @@
 llm:
-  url:  https://api.groq.com/openai/v1/chat/completions
-  api-key: key-
-  model: llama-3.1-8b-instant
+  url:  YOUR_LLM_URL_HERE
+  api-key: YOUR_LLM_API_KEY_HERE
+  model: YOUR_LLM_MODEL_HERE
   max-tokens: 128
-  temperature: 0.7
+  temperature: 1.4
   timeout-ms: 20000
   enabled: true         
   min-interval-ms: 8000
@@ -20,12 +20,12 @@ app:
   bots:
     - username: bot1
       password: 123456789
-      use-llm: true
-      fixed-text:
+      use-llm: false
+      fixed-text: "Hello people! What's new in this corridor?"
     - username: bot2
       password: 123456789
-      use-llm: true
-      fixed-text:
+      use-llm: false
+      fixed-text: "You know, this is — excuse me — a damn fine cup of coffee! … Now, I'd like two eggs, over hard. I know, don't tell me; it's hard on the arteries, but old habits die hard — just about as hard as I want those eggs. Bacon, super-crispy. Almost burned."
     - username: bot3
       password: 123456789
       use-llm: false
