@@ -10,6 +10,8 @@ services:
       LLM_ENABLED: "false"
     ports:
       - "8081:8081"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     # αν τρέχεις backend μέσω compose σε άλλο project, ρύθμισε APP_BASE_URL/APP_WS_ENDPOINT στο σωστό hostname/port
     # depends_on:
     #   - agnostik-app
