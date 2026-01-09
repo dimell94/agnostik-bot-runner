@@ -9,10 +9,9 @@ Spring Boot app that runs bot users for the Agnostik App. It talks to the backen
 ## Quick Start (Local)
 - Bring up the Agnostik backend first (follow the agnostik-app quick start). Default endpoints: HTTP `http://localhost:8080`, WS `ws://localhost:8080/ws`.
 - Clone: `git clone https://github.com/dimell94/agnostik-bot-runner.git && cd agnostik-bot-runner`
-- Configure: edit `src/main/resources/application.yml` or override via env; at minimum set `app.base-url` and `app.ws-endpoint` to match the backend. Example env override with LLM off: `export APP_BASE_URL=http://localhost:8080 APP_WS_ENDPOINT=ws://localhost:8080/ws LLM_ENABLED=false`
 - Build: `./gradlew clean build`
 - Run: `java -jar ./build/libs/bot-runner-0.0.1-SNAPSHOT.jar` (or `./gradlew bootRun` for dev)
-- Verify: watch logs for bot logins and STOMP snapshots; adjust `app.bots` credentials to existing/allowed users on the backend.
+
 
 ## What it does
 - `BotManager` loads bots from config, logs in/registers, opens STOMP sessions, and every 8s (configurable) calls `decideAndAct`.
