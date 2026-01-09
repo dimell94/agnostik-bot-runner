@@ -5,12 +5,15 @@ Spring Boot app that runs bot users for the Agnostik App. It talks to the backen
 ## General Requirements
 - Java 17 (tested with Amazon Corretto 17.0.15_6)
 - Gradle 8.14.3
+- Docker
 
-## Quick Start (Local)
-- Bring up the Agnostik backend first (follow the agnostik-app quick start). Default endpoints: HTTP `http://localhost:8080`, WS `ws://localhost:8080/ws`.
-- Clone: `git clone https://github.com/dimell94/agnostik-bot-runner.git && cd agnostik-bot-runner`
-- Build: `./gradlew clean build`
-- Run: `java -jar ./build/libs/bot-runner-0.0.1-SNAPSHOT.jar` (or `./gradlew bootRun` for dev)
+## Quick Start via CLI
+```bash
+   git clone https://github.com/dimell94/agnostik-bot-runner.git
+   cd agnostik-bot-runner
+   docker compose build 
+   docker compose up -d
+   ```
 
 
 ## What it does
@@ -22,7 +25,7 @@ Spring Boot app that runs bot users for the Agnostik App. It talks to the backen
 - STOMP: subscribe `/user/queue/snapshot`; send text to `/app/text`.
 
 ## Configuration tips
-- Secrets: prefer `llm.api-key-env` (e.g. `LLM_API_KEY`) over hardcoding.
+- Enable LLM: set env vars `LLM_URL`, `LLM_API_KEY`, `LLM_MODEL`, then set `use-llm: true` for the bots you want to drive with the model.
 - Cadence/LLM: tune `llm.min-interval-ms`, `max-tokens`, `temperature`, `timeout-ms`.
 - Fixed bots: set `use-llm=false` and provide `fixed-text` for deterministic behavior.
 

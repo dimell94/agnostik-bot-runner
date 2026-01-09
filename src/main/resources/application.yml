@@ -1,7 +1,7 @@
 llm:
-  url:  YOUR_LLM_URL_HERE
-  api-key: YOUR_LLM_API_KEY_HERE
-  model: YOUR_LLM_MODEL_HERE
+  url: ${LLM_URL}
+  api-key: ${LLM_API_KEY}
+  model: ${LLM_MODEL}
   max-tokens: 128
   temperature: 1.4
   timeout-ms: 20000
