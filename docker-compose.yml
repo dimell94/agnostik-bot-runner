@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  bot-runner:
+    build: .
+    container_name: agnostik-bot-runner
+    environment:
+      APP_BASE_URL: http://host.docker.internal:8080
+      APP_WS_ENDPOINT: ws://host.docker.internal:8080/ws
+      LLM_ENABLED: "false"
+    ports:
+      - "8081:8081"
+    # αν τρέχεις backend μέσω compose σε άλλο project, ρύθμισε APP_BASE_URL/APP_WS_ENDPOINT στο σωστό hostname/port
+    # depends_on:
+    #   - agnostik-app
