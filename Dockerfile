@@ -1,8 +1,9 @@
-FROM eclipse-temurin:17-jdk AS builder
+FROM gradle:8.10.2-jdk17 AS builder
 WORKDIR /app
 
-COPY . .
-RUN chmod +x ./gradlew && ./gradlew clean bootJar --no-daemon
+COPY --chown=gradle:gradle . .
+ENV GRADLE_OPTS="-Dorg.gradle.internal.http.connectionTimeout=60000 -Dorg.gradle.internal.http.socketTimeout=60000"
+RUN gradle clean bootJar --no-daemon
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
