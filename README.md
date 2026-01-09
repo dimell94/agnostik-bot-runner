@@ -2,15 +2,17 @@
 
 Spring Boot app that runs bot users for the Agnostik App. It talks to the backend (`/api`) for auth/moves/requests and to the `/ws` STOMP endpoint for live snapshots and text updates. For the Agnostik App context, see the agnostik-app README: https://github.com/dimell94/agnostik-app#readme
 
-## Quick start
-- Prereqs: Java 17, reachable Agnostik backend (HTTP + WS).
-- Configure: edit `src/main/resources/application.yml` or override via profiles/env:
-  - `app.base-url`: e.g. `http://localhost:8080`
-  - `app.ws-endpoint`: e.g. `ws://localhost:8080/ws`
-  - `app.bots`: list of `{ username, password, use-llm, fixed-text }`
-  - `llm.*`: URL, model, API key or env var, tokens, temperature, timeouts.
-- Run dev: `./gradlew bootRun`
-- Build jar: `./gradlew clean build` then `java -jar build/libs/bot-runner-0.0.1-SNAPSHOT.jar`
+## General Requirements
+- Java 17 (tested with Amazon Corretto 17.0.15_6)
+- Gradle 8.14.3
+
+## Quick Start (Local)
+- Bring up the Agnostik backend first (follow the agnostik-app quick start). Default endpoints: HTTP `http://localhost:8080`, WS `ws://localhost:8080/ws`.
+- Clone: `git clone https://github.com/dimell94/agnostik-bot-runner.git && cd agnostik-bot-runner`
+- Configure: edit `src/main/resources/application.yml` or override via env; at minimum set `app.base-url` and `app.ws-endpoint` to match the backend. Example env override with LLM off: `export APP_BASE_URL=http://localhost:8080 APP_WS_ENDPOINT=ws://localhost:8080/ws LLM_ENABLED=false`
+- Build: `./gradlew clean build`
+- Run: `java -jar ./build/libs/bot-runner-0.0.1-SNAPSHOT.jar` (or `./gradlew bootRun` for dev)
+- Verify: watch logs for bot logins and STOMP snapshots; adjust `app.bots` credentials to existing/allowed users on the backend.
 
 ## What it does
 - `BotManager` loads bots from config, logs in/registers, opens STOMP sessions, and every 8s (configurable) calls `decideAndAct`.
