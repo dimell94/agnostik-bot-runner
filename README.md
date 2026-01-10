@@ -3,8 +3,6 @@
 Spring Boot app that runs bot users for the Agnostik App. It talks to the backend (`/api`) for auth/moves/requests and to the `/ws` STOMP endpoint for live snapshots and text updates. For the Agnostik App context, see the agnostik-app README: https://github.com/dimell94/agnostik-app#readme
 
 ## General Requirements
-- Java 17 (tested with Amazon Corretto 17.0.15_6)
-- Gradle 8.14.3
 - Docker
 
 ## Quick Start via CLI
