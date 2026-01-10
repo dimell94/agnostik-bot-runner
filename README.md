@@ -5,7 +5,7 @@ Spring Boot app that runs bot users for the Agnostik App. It talks to the backen
 ## General Requirements
 - Docker
 
-## Quick Start via CLI
+## Run via the CLI
 ```bash
    git clone https://github.com/dimell94/agnostik-bot-runner.git
    cd agnostik-bot-runner
